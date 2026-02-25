@@ -1,0 +1,16 @@
+[
+    {
+        "url": "https://xxx.example.com/index.html",
+        "tag_name": "div",
+        "attrs": {
+            "id": "content"
+        }
+    },
+    {
+        "url": "https://yyy.example.com/index.html",
+        "tag_name": "div",
+        "attrs": {
+            "id": "main"
+        }
+    }
+]
