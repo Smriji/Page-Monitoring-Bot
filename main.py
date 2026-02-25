@@ -10,7 +10,7 @@ from google.cloud import storage
 CONFIG_FILE = "target.json"
 
 # GCS設定
-BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "chk-web-state")
+BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "gcs-bucket-name")  
 STATE_FILE = "state.json"
 
 def get_element_hash(url, tag_name=None, attrs=None):
@@ -70,25 +70,43 @@ def save_state_to_gcs(bucket_name, file_name, state):
     except Exception as e:
         print(f"GCSへの状態の保存に失敗しました: {e}")
 
-def send_to_slack(message):
-    """Slackにメッセージを送信する関数"""
-    slack_webhook_url = os.getenv("WEBHOOK_URL")
-    
-    if not slack_webhook_url:
-        print("Slack Webhook URLが設定されていません", file=sys.stderr)
+import urllib.request
+import json
+
+def send_webhook(webhook_url, message):
+    """
+    指定されたWebhook URLへメッセージをPOST送信する汎用関数
+    """
+    if not webhook_url:
         return
 
-    try:
-        from slack_sdk import WebhookClient
-        webhook = WebhookClient(slack_webhook_url)
-        response = webhook.send(text=message)
-        if response.status_code != 200:
-            print(f"Slackへのメッセージ送信に失敗しました: {response.status_code} - {response.body}", file=sys.stderr)
-        else:
-            print(f"Slackへのメッセージ送信に成功しました: {response.status_code}")
+    # SlackやGoogle Chatなどで共通して使える標準的なペイロード形式
+    # 注意: DiscordのWebhookを使用する場合は、キーを text ではなく content に変更してください。
+    # 例: payload = {"content": message}
+    payload = {
+        "text": message
+    }
 
+    # 辞書データをJSON文字列に変換し、さらにバイト列にエンコード
+    data = json.dumps(payload).encode('utf-8')
+    
+    # ヘッダーでJSONを送信することを明示
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    req = urllib.request.Request(webhook_url, data=data, headers=headers, method="POST")
+
+    try:
+        with urllib.request.urlopen(req) as response:
+            status = response.getcode()
+            # Slackなどは200、Discordなどは204を成功として返すことが多いです
+            if status in (200, 204):
+                print(f"Webhookの送信に成功しました。(ステータス: {status})")
+            else:
+                print(f"Webhook送信で予期せぬ応答がありました (ステータス: {status})")
     except Exception as e:
-        print(f"Slackへのメッセージ送信中にエラーが発生しました: {e}", file=sys.stderr)
+        print(f"Webhookの送信に失敗しました: {e}")
 
 def main():
     # 設定ファイルの読み込み
@@ -128,7 +146,8 @@ def main():
         if old_hash != new_hash:
             print(f"変更が検出されました: {url}")
             state[url] = new_hash
-            send_to_slack(f"更新がありました\n{page_title}\n{url}")
+            webhook_url = os.getenv("WEBHOOK_URL")
+            send_webhook(webhook_url, f"更新がありました\n{page_title}\n{url}")
             has_updates = True
         else:
             print(f"変更はありません\n{page_title}\n{url}")
