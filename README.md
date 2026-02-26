@@ -56,7 +56,7 @@ pip install beautifulsoup4 google-cloud-storage
 * GCS_BUCKET_NAME: 状態ファイル state.json を保存する Cloud Storage のバケット名
 * WEBHOOK_URL: 通知を送信する Webhook URL
 
-注意: Discord の Webhook を使用する場合は、通知が正しく機能するようにスクリプト内の Webhook 送信関数にて、ペイロードのキーを text から content に変更してください。
+注意: Discord の Webhook については、このままでは対応できません。discord-webhook ライブリを使用するのが無難です。
 
 ## ローカルでのテスト実行
 

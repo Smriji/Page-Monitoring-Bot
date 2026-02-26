@@ -81,8 +81,6 @@ def send_webhook(webhook_url, message):
         return
 
     # SlackやGoogle Chatなどで共通して使える標準的なペイロード形式
-    # 注意: DiscordのWebhookを使用する場合は、キーを text ではなく content に変更してください。
-    # 例: payload = {"content": message}
     payload = {
         "text": message
     }
@@ -100,7 +98,7 @@ def send_webhook(webhook_url, message):
     try:
         with urllib.request.urlopen(req) as response:
             status = response.getcode()
-            # Slackなどは200、Discordなどは204を成功として返すことが多いです
+            # 204を成功として返すサービスにも対応
             if status in (200, 204):
                 print(f"Webhookの送信に成功しました。(ステータス: {status})")
             else:
