@@ -142,10 +142,14 @@ def main():
         old_hash = state.get(url)
 
         if old_hash != new_hash:
-            print(f"変更が検出されました: {url}")
-            state[url] = new_hash
             webhook_url = os.getenv("WEBHOOK_URL")
-            send_webhook(webhook_url, f"更新がありました\n{page_title}\n{url}")
+            if old_hash is None:
+                print(f"新しいURLが追加されました: {url}")
+                send_webhook(webhook_url, f"新しいURLが追加されました\n{page_title}\n{url}")
+            else:
+                print(f"変更が検出されました: {url}")
+                send_webhook(webhook_url, f"更新がありました\n{page_title}\n{url}")
+            state[url] = new_hash
             has_updates = True
         else:
             print(f"変更はありません\n{page_title}\n{url}")
