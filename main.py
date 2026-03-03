@@ -55,7 +55,7 @@ def load_state_from_gcs(bucket_name, file_name):
             return {}
     except Exception as e:
         print(f"GCSから状態の読み込みに失敗しました: {e}")
-        return {}
+        sys.exit(1)
 
 def save_state_to_gcs(bucket_name, file_name, state):
     """GCSに状態を保存する関数"""
@@ -110,14 +110,14 @@ def main():
     # 設定ファイルの読み込み
     if not os.path.exists(CONFIG_FILE):
         print(f"設定ファイルが見つかりません: {CONFIG_FILE}")
-        sys.exit(1)
+        sys.exit(0)
     
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         try:
             targets = json.load(f)
         except json.JSONDecodeError as e:
             print(f"設定ファイルの読み込みに失敗しました: {e}")
-            sys.exit(1)
+            sys.exit(0)
 
     # GCSから状態を読み込む
     state = load_state_from_gcs(BUCKET_NAME, STATE_FILE)
