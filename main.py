@@ -74,12 +74,11 @@ def save_state_to_gcs(bucket_name, file_name, state):
     except Exception as e:
         print(f"GCSへの状態の保存に失敗しました: {e}")
 
-import urllib.request
-import json
-
 def send_webhook(webhook_url, message):
     """
     指定されたWebhook URLへメッセージをPOST送信する汎用関数
+    Discordには対応していません
+    Discordの場合はdiscord-webhookライブラリを使用することを推奨します
     """
     if not webhook_url:
         return
@@ -126,6 +125,7 @@ def main():
     # GCSから状態を読み込む
     state = load_state_from_gcs(BUCKET_NAME, STATE_FILE)
     
+    # 更新があったかどうかを追跡するフラグ
     has_updates = False
 
     # 各URLの要素のハッシュを計算し、状態と比較
@@ -146,11 +146,13 @@ def main():
             print("URLが指定されていません: ", item)
             continue
 
+        # URLから要素のハッシュを取得
         new_hash, page_title = get_element_hash(url, tag_name, attrs)
 
         if new_hash is None:
             continue
 
+        # 以前のハッシュと比較
         old_hash = state.get(url)
 
         if old_hash != new_hash:
@@ -167,6 +169,7 @@ def main():
             print(f"変更はありません\n{page_title}\n{url}")
 
     # 状態に変更があった場合、GCSに保存
+    # 変更が複数あっても一度の保存で済むように、ループの外でまとめて保存する
     if has_updates:
         save_state_to_gcs(BUCKET_NAME, STATE_FILE, state)
 
