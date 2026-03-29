@@ -30,10 +30,12 @@ def get_element_hash(url, tag_name=None, attrs=None):
     # tag_nameが指定されている場合は、その要素を抽出してハッシュ化する
     # tag_nameがNoneの場合は、ページ全体のHTMLをハッシュ化する
     if tag_name is not None:
-        target_element = soup.find_all(tag_name, attrs=attrs or {})
+        target_elements = soup.find_all(tag_name, attrs=attrs or {})
 
-        if target_element:
-            content_to_hash = str(target_element).encode('utf-8')
+        if target_elements:
+            # 抽出した要素を文字列として結合し、ハッシュ化する
+            combined_content = "".join(str(element) for element in target_elements)
+            content_to_hash = combined_content.encode('utf-8')
         else:
             print(f"指定された要素が見つかりませんでした: {url} {tag_name} {attrs}")
             return None, page_title
