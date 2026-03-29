@@ -27,7 +27,9 @@ def get_element_hash(url, tag_name=None, attrs=None):
     title_tag = soup.title
     page_title = title_tag.string if title_tag else "(タイトルなし)"
     
-    if tag_name or attrs:
+    # tag_nameが指定されている場合は、その要素を抽出してハッシュ化する
+    # tag_nameがNoneの場合は、ページ全体のHTMLをハッシュ化する
+    if tag_name is not None:
         target_element = soup.find_all(tag_name, attrs=attrs or {})
 
         if target_element:
@@ -128,8 +130,16 @@ def main():
     for item in targets:
         url = item.get("url")
         tag_name = item.get("tag_name")
-        attrs = item.get("attrs")
 
+        # tag_nameが指定されていない場合、attrsは無視されることを明示
+        if tag_name is None:
+            if "attars" in item:
+                print(f"tag_nameが指定されていないため、attrsは無視されます: {item}")
+            attrs = None
+        else:
+            attrs = item.get("attrs")
+
+        # URLが指定されていない場合はスキップ
         if not url:
             print("URLが指定されていません: ", item)
             continue
