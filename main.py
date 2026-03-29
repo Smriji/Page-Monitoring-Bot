@@ -126,6 +126,8 @@ def main():
     # GCSから状態を読み込む
     state = load_state_from_gcs(BUCKET_NAME, STATE_FILE)
     
+    has_updates = False
+
     # 各URLの要素のハッシュを計算し、状態と比較
     for item in targets:
         url = item.get("url")
@@ -160,11 +162,13 @@ def main():
                 print(f"変更が検出されました: {url}")
                 send_webhook(webhook_url, f"更新がありました\n{page_title}\n{url}")
             state[url] = new_hash
-
-            # 状態に変更があった場合、GCSに保存
-            save_state_to_gcs(BUCKET_NAME, STATE_FILE, state)
+            has_updates = True
         else:
             print(f"変更はありません\n{page_title}\n{url}")
+
+    # 状態に変更があった場合、GCSに保存
+    if has_updates:
+        save_state_to_gcs(BUCKET_NAME, STATE_FILE, state)
 
     sys.exit(0)
 
