@@ -135,7 +135,7 @@ def main():
 
         # tag_nameが指定されていない場合、attrsは無視されることを明示
         if tag_name is None:
-            if "attars" in item:
+            if "attrs" in item:
                 print(f"tag_nameが指定されていないため、attrsは無視されます: {item}")
             attrs = None
         else:
